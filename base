@@ -1036,8 +1036,9 @@ let frasesArr = [], fraseIndex = 0;
 let acertosTotais = 0, errosTotais = 0, tentativasTotais = 0;
 let pastaAtual = 1;
 let bloqueado = false;
-let mostrarPt = true;
-let mostrarEn = true;
+let mostrarPt = true; // controla se exibimos PT (true) ou EN (false)
+let mostrarEn = true; // mantém fala em inglês ativa
+let entradaPt = true; // controla se resposta deve ser em PT ou EN
 const TOTAL_FRASES = 24;
 
 function falar(texto, lang) {
@@ -1054,7 +1055,7 @@ function iniciarVisor() {
 
   const input = document.getElementById("pt");
   const botaoEnviar = document.getElementById("botao-enviar");
-  botaoEnviar.onclick = () => verificarResposta();
+  botaoEnviar.onclick = () => sortearFrase();
   input.addEventListener("keydown", e => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -1076,8 +1077,8 @@ function carregarFrases() {
       }
     }
   }
-  const qtdPrincipais = Math.round(TOTAL_FRASES * 0.7);
-  const qtdAnteriores = TOTAL_FRASES - qtdPrincipais;
+  const qtdPrincipais = pastaAtual === 1 ? TOTAL_FRASES : Math.round(TOTAL_FRASES * 0.8);
+  const qtdAnteriores = pastaAtual === 1 ? 0 : TOTAL_FRASES - qtdPrincipais;
   frasesArr = [].concat(
     embaralhar(principais).slice(0, qtdPrincipais),
     embaralhar(anteriores).slice(0, qtdAnteriores)
@@ -1096,7 +1097,7 @@ function mostrarFrase() {
   const [pt, en] = frasesArr[fraseIndex];
   document.getElementById("pt").value = "";
   document.getElementById("pt").disabled = false;
-  document.getElementById("texto-exibicao").textContent = mostrarPt ? pt : "";
+  document.getElementById("texto-exibicao").textContent = mostrarPt ? pt : en;
   if (mostrarEn) falar(en, 'en');
   bloqueado = false;
 }
@@ -1108,7 +1109,8 @@ function verificarResposta() {
   const [pt, en] = frasesArr[fraseIndex];
 
   const norm = t => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/gi, "").toLowerCase();
-  const correto = norm(resposta) === norm(pt);
+  const esperado = entradaPt ? pt : en;
+  const correto = norm(resposta) === norm(esperado);
   const resultado = document.getElementById("resultado");
   const acertosDiv = document.getElementById("acertos");
   tentativasTotais++;
@@ -1124,7 +1126,7 @@ function verificarResposta() {
     errosTotais++;
     resultado.textContent = "✘ Errado";
     resultado.style.color = "red";
-    input.value = pt;
+    input.value = entradaPt ? pt : en;
     input.style.color = "red";
     input.disabled = true;
     bloqueado = true;
@@ -1178,6 +1180,11 @@ function reivindicarPonto() {
   }
 }
 
+function sortearFrase() {
+  fraseIndex = Math.floor(Math.random() * frasesArr.length);
+  mostrarFrase();
+}
+
 function avancarNivel() {
   pastaAtual++;
   document.getElementById("nivel-indicador").innerText = `Nível ${pastaAtual}`;
@@ -1196,7 +1203,7 @@ function togglePt() {
 }
 
 function toggleEn() {
-  mostrarEn = !mostrarEn;
+  entradaPt = !entradaPt;
 }
 
 function falarFrase() {
