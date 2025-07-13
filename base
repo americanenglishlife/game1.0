@@ -1,0 +1,1215 @@
+<!DOCTYPE html> 
+<html lang="pt-BR"> 
+    <head> 
+        <meta charset="UTF-8"> 
+        <title>American Life - Tradução Oral</title>         
+        <style>
+    body {
+      margin: 0;
+      background: transparent;
+      font-family: Verdana, sans-serif;
+    }
+    #visor {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      height: 100vh;
+      padding: 0 5vw 100px 5vw;
+    }
+    #pt-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      max-width: 36ch;
+    }
+    #pt {
+      font-size: clamp(32px, 6vw, 50px);
+      color: white;
+      background: transparent;
+      border: none;
+      outline: none;
+      text-align: center;
+      width: 100%;
+      caret-color: white;
+      font-family: Verdana, sans-serif;
+      font-weight: bold;
+    }
+    #botao-enviar {
+      font-size: clamp(32px, 6vw, 50px);
+      color: white;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+    #texto-exibicao {
+      font-size: clamp(32px, 6vw, 50px);
+      color: yellow;
+      font-family: Verdana, sans-serif;
+      font-weight: bold;
+      text-align: center;
+      max-width: 36ch;
+    }
+    #barra-progresso {
+      width: 100%;
+      max-width: 90vw;
+      height: 10px;
+      background: white;
+      display: flex;
+      flex-direction: row;
+      overflow: hidden;
+    }
+    .barra-verde { background: lime; height: 100%; transition: width 0.3s; }
+    .barra-vermelha { background: red; height: 100%; transition: width 0.3s; }
+    #resultado, #acertos {
+      color: white;
+    }
+    #nivel-indicador {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      padding: 5px 10px;
+      font-size: 16px;
+      font-family: Verdana, sans-serif;
+      color: yellow;
+      font-weight: bold;
+      user-select: none;
+    }
+    #botoes-rodape {
+      position: fixed;
+      bottom: 10px;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 24px;
+    }
+    #botoes-rodape button {
+      font-size: 24px;
+      padding: 10px;
+      background: none;
+      border: 2px solid white;
+      color: white;
+      cursor: pointer;
+      border-radius: 10px;
+    }
+  </style>         
+    </head>     
+    <body> 
+        <div id="visor">
+            <div id="botoes-rodape"> 
+                <button id="botao-enviar">🆗</button>                 
+                <button onclick="reivindicarPonto()">✅</button>                 
+                <button onclick="voltarNivel()">⏮️</button>                 
+                <button onclick="avancarNivel()">⏭️</button>                 
+                <button onclick="togglePt()">🟢</button>                 
+                <button onclick="toggleEn()">🔴</button>                 
+                <button onclick="falarFrase()">🔁</button>                 
+                <button onclick="falarPt()">🔰</button>                 
+            </div>             
+            <div id="nivel-indicador" style="text-align: center; font-size: 30px; padding-right: 80px; padding-left: 90px; writing-mode: horizontal-tb; white-space: pre; resize: both; box-sizing: content-box; align-items: start;"></div>             
+            <div id="texto-exibicao"></div>             
+            <div id="pt-container"> 
+                <textarea id="pt" rows="1" style="min-width: 700; max-width: 700; min-height: 200; max-height: 200;"></textarea> 
+            </div>             
+            <div id="barra-progresso" style="min-width: 320; max-width: 320;"> 
+                <div class="barra-verde" style="width:0%"></div>                 
+                <div class="barra-vermelha" style="width:0%"></div>                 
+            </div>             
+            <div id="resultado"></div>             
+            <div id="acertos"></div>             
+        </div>                  
+        <audio id="somAcerto" src="https://cdn.freesound.org/sounds/234/234526-65937ebf-3e50-46b5-b566-e007e2be9eef?filename=234526__foolboymedia__announcement-end.wav"></audio>         
+        <audio id="somErro" src="https://cdn.freesound.org/sounds/450/450616-a2108dbe-737e-4337-8eb3-f668b4b45e27?filename=450616__breviceps__8-bit-error.wav"></audio>         
+        <audio id="somLevelUp" src="https://cdn.freesound.org/sounds/736/736267-1999d3f6-15cd-434d-8ef2-7863269bfb2b?filename=736267__universfield__new-notification-7.mp3"></audio>         
+        <script>
+
+const pastas = {
+  1: `
+  
+  
+pasta1#folder1
+  
+  `,
+
+  2: `
+  
+  
+pasta2#folder2
+  
+  `,
+
+  3: `
+  
+  
+pasta3#folder3
+  
+  `,
+
+  4: `
+  
+  
+pasta4#folder4
+  
+  `,
+
+  5: `
+  
+  
+pasta5#folder5
+  
+  `,
+
+  6: `
+  
+  
+pasta6#folder6
+  
+  `,
+
+  7: `
+  
+  
+pasta7#folder7
+  
+  `,
+
+  8: `
+  
+  
+pasta8#folder8
+  
+  `,
+
+  9: `
+  
+  
+pasta9#folder9
+  
+  `,
+
+  10: `
+  
+  
+pasta10#folder10
+  
+  `,
+
+  11: `
+  
+  
+pasta11#folder11
+  
+  `,
+
+  12: `
+  
+  
+pasta12#folder12
+  
+  `,
+
+  13: `
+  
+  
+pasta13#folder13
+  
+  `,
+
+  14: `
+  
+  
+pasta14#folder14
+  
+  `,
+
+  15: `
+  
+  
+pasta15#folder15
+  
+  `,
+
+  16: `
+  
+  
+pasta16#folder16
+  
+  `,
+
+  17: `
+  
+  
+pasta17#folder17
+  
+  `,
+
+  18: `
+  
+  
+pasta18#folder18
+  
+  `,
+
+  19: `
+  
+  
+pasta19#folder19
+  
+  `,
+
+  20: `
+  
+  
+pasta20#folder20
+  
+  `,
+
+  21: `
+  
+  
+pasta21#folder21
+  
+  `,
+
+  22: `
+  
+  
+pasta22#folder22
+  
+  `,
+
+  23: `
+  
+  
+pasta23#folder23
+  
+  `,
+
+  24: `
+  
+  
+pasta24#folder24
+  
+  `,
+
+  25: `
+  
+  
+pasta25#folder25
+  
+  `,
+
+  26: `
+  
+  
+pasta26#folder26
+  
+  `,
+
+  27: `
+  
+  
+pasta27#folder27
+  
+  `,
+
+  28: `
+  
+  
+pasta28#folder28
+  
+  `,
+
+  29: `
+  
+  
+pasta29#folder29
+  
+  `,
+
+  30: `
+  
+  
+pasta30#folder30
+  
+  `,
+
+  31: `
+  
+  
+pasta31#folder31
+  
+  `,
+
+  32: `
+  
+  
+pasta32#folder32
+  
+  `,
+
+  33: `
+  
+  
+pasta33#folder33
+  
+  `,
+
+  34: `
+  
+  
+pasta34#folder34
+  
+  `,
+
+  35: `
+  
+  
+pasta35#folder35
+  
+  `,
+
+  36: `
+  
+  
+pasta36#folder36
+  
+  `,
+
+  37: `
+  
+  
+pasta37#folder37
+  
+  `,
+
+  38: `
+  
+  
+pasta38#folder38
+  
+  `,
+
+  39: `
+  
+  
+pasta39#folder39
+  
+  `,
+
+  40: `
+  
+  
+pasta40#folder40
+  
+  `,
+
+  41: `
+  
+  
+pasta41#folder41
+  
+  `,
+
+  42: `
+  
+  
+pasta42#folder42
+  
+  `,
+
+  43: `
+  
+  
+pasta43#folder43
+  
+  `,
+
+  44: `
+  
+  
+pasta44#folder44
+  
+  `,
+
+  45: `
+  
+  
+pasta45#folder45
+  
+  `,
+
+  46: `
+  
+  
+pasta46#folder46
+  
+  `,
+
+  47: `
+  
+  
+pasta47#folder47
+  
+  `,
+
+  48: `
+  
+  
+pasta48#folder48
+  
+  `,
+
+  49: `
+  
+  
+pasta49#folder49
+  
+  `,
+
+  50: `
+  
+  
+pasta50#folder50
+  
+  `,
+
+  51: `
+  
+  
+pasta51#folder51
+  
+  `,
+
+  52: `
+  
+  
+pasta52#folder52
+  
+  `,
+
+  53: `
+  
+  
+pasta53#folder53
+  
+  `,
+
+  54: `
+  
+  
+pasta54#folder54
+  
+  `,
+
+  55: `
+  
+  
+pasta55#folder55
+  
+  `,
+
+  56: `
+  
+  
+pasta56#folder56
+  
+  `,
+
+  57: `
+  
+  
+pasta57#folder57
+  
+  `,
+
+  58: `
+  
+  
+pasta58#folder58
+  
+  `,
+
+  59: `
+  
+  
+pasta59#folder59
+  
+  `,
+
+  60: `
+  
+  
+pasta60#folder60
+  
+  `,
+
+  61: `
+  
+  
+pasta61#folder61
+  
+  `,
+
+  62: `
+  
+  
+pasta62#folder62
+  
+  `,
+
+  63: `
+  
+  
+pasta63#folder63
+  
+  `,
+
+  64: `
+  
+  
+pasta64#folder64
+  
+  `,
+
+  65: `
+  
+  
+pasta65#folder65
+  
+  `,
+
+  66: `
+  
+  
+pasta66#folder66
+  
+  `,
+
+  67: `
+  
+  
+pasta67#folder67
+  
+  `,
+
+  68: `
+  
+  
+pasta68#folder68
+  
+  `,
+
+  69: `
+  
+  
+pasta69#folder69
+  
+  `,
+
+  70: `
+  
+  
+pasta70#folder70
+  
+  `,
+
+  71: `
+  
+  
+pasta71#folder71
+  
+  `,
+
+  72: `
+  
+  
+pasta72#folder72
+  
+  `,
+
+  73: `
+  
+  
+pasta73#folder73
+  
+  `,
+
+  74: `
+  
+  
+pasta74#folder74
+  
+  `,
+
+  75: `
+  
+  
+pasta75#folder75
+  
+  `,
+
+  76: `
+  
+  
+pasta76#folder76
+  
+  `,
+
+  77: `
+  
+  
+pasta77#folder77
+  
+  `,
+
+  78: `
+  
+  
+pasta78#folder78
+  
+  `,
+
+  79: `
+  
+  
+pasta79#folder79
+  
+  `,
+
+  80: `
+  
+  
+pasta80#folder80
+  
+  `,
+
+  81: `
+  
+  
+pasta81#folder81
+  
+  `,
+
+  82: `
+  
+  
+pasta82#folder82
+  
+  `,
+
+  83: `
+  
+  
+pasta83#folder83
+  
+  `,
+
+  84: `
+  
+  
+pasta84#folder84
+  
+  `,
+
+  85: `
+  
+  
+pasta85#folder85
+  
+  `,
+
+  86: `
+  
+  
+pasta86#folder86
+  
+  `,
+
+  87: `
+  
+  
+pasta87#folder87
+  
+  `,
+
+  88: `
+  
+  
+pasta88#folder88
+  
+  `,
+
+  89: `
+  
+  
+pasta89#folder89
+  
+  `,
+
+  90: `
+  
+  
+pasta90#folder90
+  
+  `,
+
+  91: `
+  
+  
+pasta91#folder91
+  
+  `,
+
+  92: `
+  
+  
+pasta92#folder92
+  
+  `,
+
+  93: `
+  
+  
+pasta93#folder93
+  
+  `,
+
+  94: `
+  
+  
+pasta94#folder94
+  
+  `,
+
+  95: `
+  
+  
+pasta95#folder95
+  
+  `,
+
+  96: `
+  
+  
+pasta96#folder96
+  
+  `,
+
+  97: `
+  
+  
+pasta97#folder97
+  
+  `,
+
+  98: `
+  
+  
+pasta98#folder98
+  
+  `,
+
+  99: `
+  
+  
+pasta99#folder99
+  
+  `,
+
+  100: `
+  
+  
+pasta100#folder100
+  
+  `,
+
+  101: `
+  
+  
+pasta101#folder101
+  
+  `,
+
+  102: `
+  
+  
+pasta102#folder102
+  
+  `,
+
+  103: `
+  
+  
+pasta103#folder103
+  
+  `,
+
+  104: `
+  
+  
+pasta104#folder104
+  
+  `,
+
+  105: `
+  
+  
+pasta105#folder105
+  
+  `,
+
+  106: `
+  
+  
+pasta106#folder106
+  
+  `,
+
+  107: `
+  
+  
+pasta107#folder107
+  
+  `,
+
+  108: `
+  
+  
+pasta108#folder108
+  
+  `,
+
+  109: `
+  
+  
+pasta109#folder109
+  
+  `,
+
+  110: `
+  
+  
+pasta110#folder110
+  
+  `,
+
+  111: `
+  
+  
+pasta111#folder111
+  
+  `,
+
+  112: `
+  
+  
+pasta112#folder112
+  
+  `,
+
+  113: `
+  
+  
+pasta113#folder113
+  
+  `,
+
+  114: `
+  
+  
+pasta114#folder114
+  
+  `,
+
+  115: `
+  
+  
+pasta115#folder115
+  
+  `,
+
+  116: `
+  
+  
+pasta116#folder116
+  
+  `,
+
+  117: `
+  
+  
+pasta117#folder117
+  
+  `,
+
+  118: `
+  
+  
+pasta118#folder118
+  
+  `,
+
+  119: `
+  
+  
+pasta119#folder119
+  
+  `,
+
+  120: `
+  
+  
+pasta120#folder120
+  
+  `,
+
+  121: `
+  
+  
+pasta121#folder121
+  
+  `,
+
+  122: `
+  
+  
+pasta122#folder122
+  
+  `,
+
+  123: `
+  
+  
+pasta123#folder123
+  
+  `,
+
+  124: `
+  
+  
+pasta124#folder124
+  
+  `,
+
+  125: `
+  
+  
+pasta125#folder125
+  
+  `,
+
+  126: `
+  
+  
+pasta126#folder126
+  
+  `,
+
+  127: `
+  
+  
+pasta127#folder127
+  
+  `,
+
+  128: `
+  
+  
+pasta128#folder128
+  
+  `,
+  
+  
+  };
+
+
+
+
+let frasesArr = [], fraseIndex = 0;
+let acertosTotais = 0, errosTotais = 0, tentativasTotais = 0;
+let pastaAtual = 1;
+let bloqueado = false;
+let mostrarPt = true;
+let mostrarEn = true;
+const TOTAL_FRASES = 24;
+
+function falar(texto, lang) {
+  const utter = new SpeechSynthesisUtterance(texto);
+  utter.lang = lang === 'pt' ? 'pt-BR' : 'en-US';
+  speechSynthesis.cancel();
+  speechSynthesis.speak(utter);
+}
+
+function iniciarVisor() {
+  document.getElementById("visor").style.display = "flex";
+  document.getElementById("nivel-indicador").innerText = `Nível ${pastaAtual}`;
+  carregarFrases();
+
+  const input = document.getElementById("pt");
+  const botaoEnviar = document.getElementById("botao-enviar");
+  botaoEnviar.onclick = () => verificarResposta();
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      verificarResposta();
+    }
+  });
+}
+
+function carregarFrases() {
+  let principais = [], anteriores = [];
+  if (pastas[pastaAtual]) {
+    principais = pastas[pastaAtual].trim().split("\n").map(l => l.split("#"));
+  }
+  if (pastaAtual > 1) {
+    for (let i = 1; i < pastaAtual; i++) {
+      if (pastas[i]) {
+        const frases = pastas[i].trim().split("\n").map(l => l.split("#"));
+        anteriores = anteriores.concat(frases);
+      }
+    }
+  }
+  const qtdPrincipais = Math.round(TOTAL_FRASES * 0.7);
+  const qtdAnteriores = TOTAL_FRASES - qtdPrincipais;
+  frasesArr = [].concat(
+    embaralhar(principais).slice(0, qtdPrincipais),
+    embaralhar(anteriores).slice(0, qtdAnteriores)
+  );
+  frasesArr = embaralhar(frasesArr);
+  fraseIndex = 0;
+  acertosTotais = 0;
+  errosTotais = 0;
+  tentativasTotais = 0;
+  setTimeout(() => mostrarFrase(), 300);
+  atualizarBarraProgresso();
+}
+
+function mostrarFrase() {
+  if (fraseIndex >= frasesArr.length) fraseIndex = 0;
+  const [pt, en] = frasesArr[fraseIndex];
+  document.getElementById("pt").value = "";
+  document.getElementById("pt").disabled = false;
+  document.getElementById("texto-exibicao").textContent = mostrarPt ? pt : "";
+  if (mostrarEn) falar(en, 'en');
+  bloqueado = false;
+}
+
+function verificarResposta() {
+  if (bloqueado) return;
+  const input = document.getElementById("pt");
+  const resposta = input.value.trim();
+  const [pt, en] = frasesArr[fraseIndex];
+
+  const norm = t => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/gi, "").toLowerCase();
+  const correto = norm(resposta) === norm(pt);
+  const resultado = document.getElementById("resultado");
+  const acertosDiv = document.getElementById("acertos");
+  tentativasTotais++;
+
+  if (correto) {
+    document.getElementById("somAcerto").play();
+    acertosTotais++;
+    resultado.textContent = "✔ Correto";
+    resultado.style.color = "lime";
+    continuar();
+  } else {
+    document.getElementById("somErro").play();
+    errosTotais++;
+    resultado.textContent = "✘ Errado";
+    resultado.style.color = "red";
+    input.value = pt;
+    input.style.color = "red";
+    input.disabled = true;
+    bloqueado = true;
+    setTimeout(() => {
+      input.style.color = "white";
+      resultado.textContent = "";
+      input.disabled = false;
+      bloqueado = false;
+      continuar();
+    }, 3000);
+  }
+  atualizarBarraProgresso();
+  acertosDiv.textContent = `Acertos: ${acertosTotais} / ${tentativasTotais}`;
+}
+
+function continuar() {
+  fraseIndex++;
+  if (tentativasTotais >= TOTAL_FRASES) {
+    if (acertosTotais >= 22) {
+      pastaAtual++;
+      document.getElementById("somLevelUp").play();
+    } else if (acertosTotais < 17) {
+      pastaAtual = Math.max(1, pastaAtual - 1);
+    }
+    document.getElementById("nivel-indicador").innerText = `Nível ${pastaAtual}`;
+    carregarFrases();
+  } else {
+    mostrarFrase();
+  }
+}
+
+function atualizarBarraProgresso() {
+  const verde = document.querySelector(".barra-verde");
+  const vermelho = document.querySelector(".barra-vermelha");
+  const total = tentativasTotais;
+  const perc = total > 0 ? (acertosTotais / total) * 100 : 0;
+  verde.style.width = `${perc}%`;
+  vermelho.style.width = `${100 - perc}%`;
+}
+
+function embaralhar(array) {
+  return array.sort(() => Math.random() - 0.5);
+}
+
+function reivindicarPonto() {
+  if (tentativasTotais > 0 && errosTotais > 0) {
+    errosTotais--;
+    acertosTotais++;
+    atualizarBarraProgresso();
+    document.getElementById("acertos").textContent = `Acertos: ${acertosTotais} / ${tentativasTotais}`;
+  }
+}
+
+function avancarNivel() {
+  pastaAtual++;
+  document.getElementById("nivel-indicador").innerText = `Nível ${pastaAtual}`;
+  carregarFrases();
+}
+
+function voltarNivel() {
+  pastaAtual = Math.max(1, pastaAtual - 1);
+  document.getElementById("nivel-indicador").innerText = `Nível ${pastaAtual}`;
+  carregarFrases();
+}
+
+function togglePt() {
+  mostrarPt = !mostrarPt;
+  mostrarFrase();
+}
+
+function toggleEn() {
+  mostrarEn = !mostrarEn;
+}
+
+function falarFrase() {
+  const [, en] = frasesArr[fraseIndex];
+  falar(en, 'en');
+}
+
+function falarPt() {
+  const [pt] = frasesArr[fraseIndex];
+  falar(pt, 'pt');
+}
+
+window.onload = iniciarVisor;
+</script>         
+    </body>     
+</html>
